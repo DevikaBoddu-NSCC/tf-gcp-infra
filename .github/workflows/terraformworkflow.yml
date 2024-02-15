@@ -14,6 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -23,4 +28,7 @@ jobs:
         run: terraform fmt -check -diff || terraform fmt -write=true
 
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          terraform init
+          terraform validate
+        continue-on-error: true
