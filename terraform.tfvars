@@ -1,8 +1,8 @@
 project= "web-project-370718"
 region = "us-east1"
 vpc_name = "vpc-network"
-webapp_subnet = "webapp-subnet"
-db_subnet ="db-subnet"
+webapp_subnet = "webapp"
+db_subnet ="db"
 webapp_ip_cidr_range="10.0.0.0/24"
 db_ip_cidr_range="10.0.1.0/24"
 auto_create_subnetworks=false

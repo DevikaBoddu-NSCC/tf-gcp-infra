@@ -24,7 +24,6 @@ resource "google_compute_subnetwork" "db_subnet" {
   region        = var.region
   network       = google_compute_network.vpc_network.id
 }
-
 resource "google_compute_route" "webapp_route_name" {
   name        = var.webapp_route_name
   dest_range  = var.dest_range
