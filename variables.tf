@@ -170,15 +170,22 @@ variable "deny_ssh" {
   type        = string
   default     = "deny_ssh"
 }
-
 variable "my_ip_address" {
   description = "Describes the my_ip_address"
   type        = list(string)
   default     = ["73.218.147.89"]
 }
 
+
 variable "allow_ssh_from_my_ip" {
   description = "Describes the allow_ssh_from_my_ip"
   type        = string
   default     = "allow_ssh_from_my_ip"
 }
+
+variable "image_family" {
+  description = "Describes the image_family"
+  type        = string
+  default     = "centos-stream-8"
+}
+
