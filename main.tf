@@ -45,17 +45,13 @@ resource "google_compute_instance" "webapp_vm_instance" {
   network_interface {
     network       = google_compute_network.vpc_network.id
     subnetwork    = google_compute_subnetwork.webapp_subnet.id
-    access_config {
-      
-    }
-
+    access_config {}
   }
-  tags         = var.tags
+  tags     = var.tags
   service_account {
     email  = var.service_account_email
     scopes = var.scopes
   }
-
 }
 resource "google_compute_firewall" "allow_http" {
   name    = var.allow_http
@@ -69,6 +65,17 @@ resource "google_compute_firewall" "allow_http" {
   source_ranges = var.source_ranges
   target_tags   = var.target_tags
 }
+resource "google_compute_firewall" "allow_ssh_from_my_ip" {
+  name    = var.allow_ssh_from_my_ip
+  network = google_compute_network.vpc_network.id
+
+  allow {
+    protocol = var.protocol
+    ports    = var.port_deny
+  }
+
+   source_ranges = var.my_ip_address
+}
 resource "google_compute_firewall" "deny_ssh" {
   name    = var.deny_ssh
   network = google_compute_network.vpc_network.id
@@ -76,5 +83,5 @@ resource "google_compute_firewall" "deny_ssh" {
     protocol = var.protocol
     ports    = var.port_deny
   }
-  source_ranges = var.source_ranges 
+  source_ranges = var.source_ranges
 }
