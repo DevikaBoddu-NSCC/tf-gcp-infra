@@ -28,5 +28,5 @@ type                            = "pd-balanced"
 scopes                          = ["https://www.googleapis.com/auth/cloud-platform"]
 allow_ssh_from_my_ip            = "allow-ssh-from-my-ip"
 image_family                    = "centos-stream-8"
-image                           = "packer-1708536057"
+
 
