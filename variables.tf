@@ -9,7 +9,6 @@ variable "region" {
   type        = string
   default     = "us-central1"
 }
-
 variable "zone" {
   description = "The Google Cloud zone"
   type        = string
