@@ -1,7 +1,6 @@
 provider "google" {
   project = var.project
   region  = var.region
-  zone    = var.zone
 }
 
 resource "google_compute_network" "vpc_network" {
@@ -32,4 +31,50 @@ resource "google_compute_route" "webapp_route_name" {
 
 }
 
+resource "google_compute_instance" "webapp_vm_instance" {
+  name          = var.webapp_vm_instance
+  machine_type  = var.machine_type
+  zone          = var.zone
+  boot_disk {
+    initialize_params {
+      image = var.image
+      size = var.size
+      type = var.type
+    }
+  }
+  network_interface {
+    network       = google_compute_network.vpc_network.id
+    subnetwork    = google_compute_subnetwork.webapp_subnet.id
+    access_config {
+      
+    }
 
+  }
+  tags         = var.tags
+  service_account {
+    email  = var.service_account_email
+    scopes = var.scopes
+  }
+
+}
+resource "google_compute_firewall" "allow_http" {
+  name    = var.allow_http
+  network = google_compute_network.vpc_network.id
+
+  allow {
+    protocol = var.protocol
+    ports    = var.port_allow
+  }
+
+  source_ranges = var.source_ranges
+  target_tags   = var.target_tags
+}
+resource "google_compute_firewall" "deny_ssh" {
+  name    = var.deny_ssh
+  network = google_compute_network.vpc_network.id
+  deny {
+    protocol = var.protocol
+    ports    = var.port_deny
+  }
+  source_ranges = var.source_ranges 
+}
