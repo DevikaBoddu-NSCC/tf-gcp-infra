@@ -4,9 +4,9 @@ provider "google" {
 }
 
 resource "google_compute_network" "vpc_network" {
-  name                    = var.vpc_name
-  auto_create_subnetworks = var.auto_create_subnetworks
-  routing_mode            = var.route_mode
+  name                            = var.vpc_name
+  auto_create_subnetworks         = var.auto_create_subnetworks
+  routing_mode                    = var.route_mode
   delete_default_routes_on_create = var.delete_default_routes_on_create
 }
 
@@ -24,36 +24,36 @@ resource "google_compute_subnetwork" "db_subnet" {
   network       = google_compute_network.vpc_network.id
 }
 resource "google_compute_route" "webapp_route_name" {
-  name        = var.webapp_route_name
-  dest_range  = var.dest_range
-  network     = google_compute_network.vpc_network.id
+  name             = var.webapp_route_name
+  dest_range       = var.dest_range
+  network          = google_compute_network.vpc_network.id
   next_hop_gateway = var.next_hop_gateway
 
 }
 data "google_compute_image" "latest_custom_image" {
-  family  = var.image_family
+  family = var.image_family
 }
- 
+
 output "latest_custom_image_name" {
   value = data.google_compute_image.latest_custom_image.name
 }
 resource "google_compute_instance" "webapp_vm_instance" {
-  name          = var.webapp_vm_instance
-  machine_type  = var.machine_type
-  zone          = var.zone
+  name         = var.webapp_vm_instance
+  machine_type = var.machine_type
+  zone         = var.zone
   boot_disk {
     initialize_params {
       image = data.google_compute_image.latest_custom_image.self_link
-      size = var.size
-      type = var.type
+      size  = var.size
+      type  = var.type
     }
   }
   network_interface {
-    network       = google_compute_network.vpc_network.id
-    subnetwork    = google_compute_subnetwork.webapp_subnet.id
+    network    = google_compute_network.vpc_network.id
+    subnetwork = google_compute_subnetwork.webapp_subnet.id
     access_config {}
   }
-  tags     = var.tags
+  tags = var.tags
   service_account {
     email  = var.service_account_email
     scopes = var.scopes
@@ -80,7 +80,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
     ports    = var.port_deny
   }
 
-   source_ranges = var.my_ip_address
+  source_ranges = var.my_ip_address
 }
 resource "google_compute_firewall" "deny_ssh" {
   name    = var.deny_ssh
