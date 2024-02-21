@@ -30,14 +30,20 @@ resource "google_compute_route" "webapp_route_name" {
   next_hop_gateway = var.next_hop_gateway
 
 }
-
+data "google_compute_image" "latest_custom_image" {
+  family  = var.image_family
+}
+ 
+output "latest_custom_image_name" {
+  value = data.google_compute_image.latest_custom_image.name
+}
 resource "google_compute_instance" "webapp_vm_instance" {
   name          = var.webapp_vm_instance
   machine_type  = var.machine_type
   zone          = var.zone
   boot_disk {
     initialize_params {
-      image = var.image
+      image = data.google_compute_image.latest_custom_image.self_link
       size = var.size
       type = var.type
     }

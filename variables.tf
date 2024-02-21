@@ -182,3 +182,8 @@ variable "allow_ssh_from_my_ip" {
   type        = string
   default     = "allow_ssh_from_my_ip"
 }
+variable "image_family" {
+  description = "Describes the image_family"
+  type        = string
+  default     = "centos-stream-8"
+}
