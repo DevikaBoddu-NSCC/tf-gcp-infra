@@ -169,7 +169,7 @@ variable "deny_ssh" {
   description = "Describes the deny_ssh firewall"
   type        = string
   default     = "deny_ssh"
-
+}
 variable "my_ip_address" {
   description = "Describes the my_ip_address"
   type        = list(string)
