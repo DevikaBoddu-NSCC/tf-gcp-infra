@@ -188,4 +188,14 @@ variable "image_family" {
   type        = string
   default     = "centos-stream-8"
 }
+variable "ssh_pub_key_file" {
+  description = "Describes the ssh_pub_key_file"
+  type        = string
+  default     = "/Users/devikaboddu/Desktop/CC/Assignment4/key.pub"
+}
+variable "ssh_user" {
+  description = "Describes the ssh_user"
+  type        = string
+  default     = "centos"
+}
 

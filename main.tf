@@ -58,6 +58,9 @@ resource "google_compute_instance" "webapp_vm_instance" {
     email  = var.service_account_email
     scopes = var.scopes
   }
+  metadata = {
+    ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_file)}"
+  }
 }
 resource "google_compute_firewall" "allow_http" {
   name    = var.allow_http
@@ -81,13 +84,4 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   }
 
   source_ranges = var.my_ip_address
-}
-resource "google_compute_firewall" "deny_ssh" {
-  name    = var.deny_ssh
-  network = google_compute_network.vpc_network.id
-  deny {
-    protocol = var.protocol
-    ports    = var.port_deny
-  }
-  source_ranges = var.source_ranges
 }
