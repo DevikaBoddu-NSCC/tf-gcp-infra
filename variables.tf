@@ -202,10 +202,6 @@ variable "ssh_user" {
 variable "cloud_sql_instance" {
   description = "Describes the cloud_sql_instance"
 }
-
-variable "db_user" {
-  description = "Describes the ssh_user"
-}
 variable "private_ip_address" {
   description = "Describes the private_ip_address"
 }
@@ -256,4 +252,12 @@ variable "database_name" {
 variable "db_user_name" {
   description = "Describes the db_user_name"
   default     = "webapp"
+}
+variable "deletion_policy" {
+  description = "Describes the deletion_policy"
+  default     = "ABANDON"
+}
+variable "database_version" {
+  description = "Describes the database_version"
+  default     = "MYSQL_5_7"
 }
