@@ -80,6 +80,7 @@ resource "google_service_networking_connection" "default" {
   network                 = google_compute_network.vpc_network.id
   service                 = var.service
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+  deletion_policy         = var.deletion_policy
 }
 
 resource "random_id" "db_name_suffix" {
@@ -89,7 +90,7 @@ resource "random_id" "db_name_suffix" {
 resource "google_sql_database_instance" "cloud_sql_instance" {
   name               = "sql-instance-${random_id.db_name_suffix.hex}"
   region             = var.region
-  database_version   = "MYSQL_5_7"
+  database_version   = var.database_version
   deletion_protection = var.deletion_protection
   settings {
     tier = var.tier_sql
