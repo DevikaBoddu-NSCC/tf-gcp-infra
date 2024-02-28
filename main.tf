@@ -150,14 +150,26 @@ resource "google_compute_instance" "webapp_vm_instance" {
   metadata = {
     ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_file)}"
     startup-script = <<-EOT
+        # #!/bin/bash
+        # ENV_FILE="/opt/csye6225/webapp/.env"
+        # if [ ! -f "$ENV_FILE" ]; then
+        #   sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
+        #   sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
+        #   sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
+        #   sed -i 's/^DB_NAME=.*/DB_NAME=${google_sql_database.database.name}/' "$ENV_FILE"
+        # fi
         #!/bin/bash
+
         ENV_FILE="/opt/csye6225/webapp/.env"
         if [ ! -f "$ENV_FILE" ]; then
-          sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
-          sed -i 's/^DB_NAME=.*/DB_NAME=${google_sql_database.database.name}/' "$ENV_FILE"
+            touch "$ENV_FILE"
         fi
+        echo "DB_DIALECT=mysql" >> "$ENV_FILE"
+        echo "DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}" >> "$ENV_FILE"
+        echo "DB_USERNAME=${google_sql_user.db_user.name}" >> "$ENV_FILE"
+        echo "DB_PASSWORD=${google_sql_user.db_user.password}" >> "$ENV_FILE"
+        echo "DB_NAME=${google_sql_database.database.name}" >> "$ENV_FILE"
+        echo "PORT = 3000" >> "$ENV_FILE"
       EOT
   }
 
