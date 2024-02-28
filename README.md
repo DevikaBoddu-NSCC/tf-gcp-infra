@@ -8,11 +8,11 @@ Prerequisites
         Install gcloud cli  
     Create gcloud project using cli or console : 
 *        gcloud projects create web-project-370718 
-*        gcloud projects create dev-gcp
+*        gcloud projects create dev-nscc
     Perform these steps to connect to the gcp console - 
 *        gcloud auth login 
 *        gcloud auth application-default login
-*        gcloud config set project dev-gcp
+*        gcloud config set project dev-nscc     
     Provider Credentials: Configure provider credentials in Terraform configuration file main.tf. 
   
 Steps 
