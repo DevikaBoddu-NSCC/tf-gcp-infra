@@ -198,4 +198,62 @@ variable "ssh_user" {
   type        = string
   default     = "centos"
 }
+#assignment4
+variable "cloud_sql_instance" {
+  description = "Describes the cloud_sql_instance"
+}
 
+variable "db_user" {
+  description = "Describes the ssh_user"
+}
+variable "private_ip_address" {
+  description = "Describes the private_ip_address"
+}
+variable "purpose" {
+  description = "Describes the purpose of private-ip-address"
+  default = "VPC_PEERING"
+}
+variable "address_type" {
+  description = "Describes the address_type"
+  default     = "INTERNAL"
+}
+variable "prefix_length" {
+  description = "Describes the prefix_length"
+  default = 16
+}
+variable "service" {
+  description = "Describes the service"
+  default = "servicenetworking.googleapis.com"
+}
+variable "tier_sql" {
+  description = "Describes the tier"
+  default = "db-f1-micro"
+}
+variable "disk_type_sql" {
+  description = "Describes the disk_type_sql"
+  default = "PD_SSD"
+}
+variable "disk_size_sql" {
+  description = "Describes the disk_size_sql"
+  default=100
+}
+variable "availability_type_sql" {
+  description = "Describes the availability_type_sql"
+  default     = "REGIONAL"
+}
+variable "ipv4_enabled" {
+  description = "Describes the ipv4_enabled"
+  default     = false
+}
+variable "deletion_protection" {
+  description = "Describes the deletion_protection"
+  default     = false
+}
+variable "database_name" {
+  description = "Describes the database_name"
+  default     = "webapp"
+}
+variable "db_user_name" {
+  description = "Describes the db_user_name"
+  default     = "webapp"
+}

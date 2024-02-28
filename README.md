@@ -20,3 +20,26 @@ Steps
 * 		Apply Infrastructure Changes: If the plan looks good, apply the changes: terraform apply
 * 		Verify Infrastructure: After applying changes, verify that the infrastructure has been provisioned correctly using gcp console.
 * 		Destroy Infrastructure (Optional): terraform destroy
+
+
+
+
+
+
+
+
+
+
+metadata = {
+  startup-script = <<-EOT
+      #!/bin/bash
+      set -e
+      if [ ! -f /opt/application.properties ]; then
+        echo "spring.datasource.url=jdbc:postgresql://${google_sql_database_instance.cloudsql_instance.ip_address.0.ip_address}:5432/webapp" >> /opt/application.properties
+        echo "spring.datasource.username=${google_sql_user.db_user.name}" >> /opt/application.properties
+        echo "spring.datasource.password=${google_sql_user.db_user.password}" >> /opt/application.properties
+        echo "spring.jpa.hibernate.ddl-auto=update" >> /opt/application.properties
+        echo "spring.jpa.show-sql=true" >> /opt/application.properties
+      fi
+    EOT
+}
