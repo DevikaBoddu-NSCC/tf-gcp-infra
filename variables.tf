@@ -1,11 +1,7 @@
 variable "project" {
   description = "The Google Cloud project ID"
   type        = string
-<<<<<<< HEAD
   default     = "dev-csye6225-415809"
-=======
-  default     = "dev-gcp-415604"
->>>>>>> 1f39f50200f4e5eeff9fda218266e2c0fa50fbf8
 }
 
 variable "region" {
