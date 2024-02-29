@@ -1,7 +1,7 @@
 variable "project" {
   description = "The Google Cloud project ID"
   type        = string
-  default     = "dev-gcp-415604"
+  default     = "dev-csye6225-415809"
 }
 
 variable "region" {
@@ -176,7 +176,6 @@ variable "my_ip_address" {
   default     = ["73.218.147.89"]
 }
 
-
 variable "allow_ssh_from_my_ip" {
   description = "Describes the allow_ssh_from_my_ip"
   type        = string
@@ -272,4 +271,9 @@ variable "deny_all_sql_traffic" {
 variable "db_port" {
   description = "Describes the database_port"
   default     = "3306"
+}
+
+variable "webapp_subnet_range" {
+  description = "Describes the webapp_subnet_range"
+  default     = ["10.0.0.0/24"]
 }

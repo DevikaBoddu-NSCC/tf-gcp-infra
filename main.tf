@@ -121,6 +121,7 @@ resource "random_password" "password" {
 }
 resource "google_sql_user" "db_user" {
   name     = var.db_user_name
+  host     = "%"
   instance = google_sql_database_instance.cloud_sql_instance.id
   password = random_password.password.result
 }
@@ -165,7 +166,6 @@ resource "google_compute_instance" "webapp_vm_instance" {
 
   depends_on = [google_service_networking_connection.default]
 }
- 
 resource "google_compute_firewall" "allow_sql_access" {
   name    = var.allow_sql_access
   network = google_compute_network.vpc_network.id
@@ -175,6 +175,7 @@ resource "google_compute_firewall" "allow_sql_access" {
     ports    = var.db_port
   }
 
-  source_ranges = ["${google_compute_instance.webapp_vm_instance.network_interface.0.network_ip}"]
-  target_tags = [google_sql_database_instance.cloud_sql_instance.id]
+  source_ranges = var.webapp_subnet_range
+  destination_ranges = ["${google_compute_global_address.private_ip_address.address}/16"]
+  target_tags = var.tags
 }
