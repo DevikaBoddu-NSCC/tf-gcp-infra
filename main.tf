@@ -61,7 +61,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
 
   allow {
     protocol = var.protocol
-    ports    = var.port_deny
+    ports    = var.port_allow
   }
 
   source_ranges = var.my_ip_address
