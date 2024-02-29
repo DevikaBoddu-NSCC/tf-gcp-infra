@@ -3,10 +3,10 @@ provider "google" {
   region  = var.region
 }
 
-provider "google-beta" {
-  project = var.project
-  region  = var.region
-}
+# provider "google-beta" {
+#   project = var.project
+#   region  = var.region
+# }
 
 resource "google_compute_network" "vpc_network" {
   name                            = var.vpc_name
@@ -21,7 +21,6 @@ resource "google_compute_subnetwork" "webapp_subnet" {
   region        = var.region
   network       = google_compute_network.vpc_network.id
 }
-
 resource "google_compute_subnetwork" "db_subnet" {
   name          = var.db_subnet
   ip_cidr_range = var.db_ip_cidr_range
@@ -35,7 +34,7 @@ resource "google_compute_route" "webapp_route_name" {
   next_hop_gateway = var.next_hop_gateway
 
 }
-
+#assignment4
 data "google_compute_image" "latest_custom_image" {
   family = var.image_family
 }
@@ -62,12 +61,12 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
 
   allow {
     protocol = var.protocol
-    ports    = var.port_deny
+    ports    = var.port_allow
   }
 
   source_ranges = var.my_ip_address
 }
-#assignment4
+#assignment5
 
 resource "google_compute_global_address" "private_ip_address" {
   name          = var.private_ip_address
@@ -150,29 +149,32 @@ resource "google_compute_instance" "webapp_vm_instance" {
   metadata = {
     ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_file)}"
     startup-script = <<-EOT
-        # #!/bin/bash
-        # ENV_FILE="/opt/csye6225/webapp/.env"
-        # if [ ! -f "$ENV_FILE" ]; then
-        #   sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
-        #   sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
-        #   sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
-        #   sed -i 's/^DB_NAME=.*/DB_NAME=${google_sql_database.database.name}/' "$ENV_FILE"
-        # fi
         #!/bin/bash
-
         ENV_FILE="/opt/csye6225/webapp/.env"
-        if [ ! -f "$ENV_FILE" ]; then
-            touch "$ENV_FILE"
+        if [ -e "$ENV_FILE" ]; then
+            sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
+            sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
+            sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
+            sed -i 's/^DB_NAME=.*/DB_NAME=${google_sql_database.database.name}/' "$ENV_FILE"
+            echo "$ENV_FILE"
         fi
-        echo "DB_DIALECT=mysql" >> "$ENV_FILE"
-        echo "DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}" >> "$ENV_FILE"
-        echo "DB_USERNAME=${google_sql_user.db_user.name}" >> "$ENV_FILE"
-        echo "DB_PASSWORD=${google_sql_user.db_user.password}" >> "$ENV_FILE"
-        echo "DB_NAME=${google_sql_database.database.name}" >> "$ENV_FILE"
-        echo "PORT = 3000" >> "$ENV_FILE"
+        sudo chown -R csye6225:csye6225 /opt/csye6225/
+        sudo systemctl restart webapp
       EOT
   }
 
   depends_on = [google_service_networking_connection.default]
 }
  
+resource "google_compute_firewall" "allow_sql_access" {
+  name    = var.allow_sql_access
+  network = google_compute_network.vpc_network.id
+
+  allow {
+    protocol = var.protocol
+    ports    = var.db_port
+  }
+
+  source_ranges = ["${google_compute_instance.webapp_vm_instance.network_interface.0.network_ip}"]
+  target_tags = [google_sql_database_instance.cloud_sql_instance.id]
+}

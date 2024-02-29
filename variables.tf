@@ -1,7 +1,7 @@
 variable "project" {
   description = "The Google Cloud project ID"
   type        = string
-  default     = "dev-nscc"
+  default     = "dev-gcp-415604"
 }
 
 variable "region" {
@@ -260,4 +260,16 @@ variable "deletion_policy" {
 variable "database_version" {
   description = "Describes the database_version"
   default     = "MYSQL_5_7"
+}
+variable "allow_sql_access" {
+  description = "Describes the allow_sql_access"
+  default     = "allow-sql-access"
+}
+variable "deny_all_sql_traffic" {
+  description = "Describes the deny_all_sql_traffic"
+  default     = "deny-all-sql-traffic"
+}
+variable "db_port" {
+  description = "Describes the database_port"
+  default     = "3306"
 }
