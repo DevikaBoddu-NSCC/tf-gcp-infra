@@ -61,7 +61,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
 
   allow {
     protocol = var.protocol
-    ports    = var.port_allow
+    ports    = var.port_deny
   }
 
   source_ranges = var.my_ip_address
@@ -130,6 +130,7 @@ resource "google_compute_instance" "webapp_vm_instance" {
   name         = var.webapp_vm_instance
   machine_type = var.machine_type
   zone         = var.zone
+  allow_stopping_for_update = true 
   boot_disk {
     initialize_params {
       image = data.google_compute_image.latest_custom_image.self_link
@@ -144,7 +145,7 @@ resource "google_compute_instance" "webapp_vm_instance" {
   }
   tags = var.tags
   service_account {
-    email  = var.service_account_email
+    email  = google_service_account.service_account.email
     scopes = var.scopes
   }
   metadata = {
@@ -153,6 +154,7 @@ resource "google_compute_instance" "webapp_vm_instance" {
         #!/bin/bash
         ENV_FILE="/opt/csye6225/webapp/.env"
         if [ -e "$ENV_FILE" ]; then
+            sed -i '1iLOGPATH=/var/log/webapp/' "$ENV_FILE"
             sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
             sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
             sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
@@ -160,11 +162,12 @@ resource "google_compute_instance" "webapp_vm_instance" {
             echo "$ENV_FILE"
         fi
         sudo chown -R csye6225:csye6225 /opt/csye6225/
+        sudo chown -R csye6225:csye6225 /var/log/webapp/
         sudo systemctl restart webapp
       EOT
   }
 
-  depends_on = [google_service_networking_connection.default]
+  depends_on = [google_service_networking_connection.default, google_service_account.service_account]
 }
 resource "google_compute_firewall" "allow_sql_access" {
   name    = var.allow_sql_access
@@ -178,4 +181,47 @@ resource "google_compute_firewall" "allow_sql_access" {
   source_ranges = var.webapp_subnet_range
   destination_ranges = ["${google_compute_global_address.private_ip_address.address}/16"]
   target_tags = var.tags
+}
+#assignment6
+
+data "google_iam_policy" "admin" {
+  binding {
+    role = var.role_serviceAccountUser
+
+    members = [
+      "user:${google_service_account.service_account.email}",
+    ]
+  }
+}
+
+resource "google_service_account" "service_account" {
+  account_id   = var.account_id
+  display_name = var.display_name
+}
+
+resource "google_project_iam_binding" "logging_admin_binding" {
+  project = var.project
+  role    = var.role_loggingadmin
+
+  members = [
+    "serviceAccount:${google_service_account.service_account.email}"
+  ]
+}
+
+resource "google_project_iam_binding" "monitoring_metric_writer_binding" {
+  project = var.project
+  role    = var.role_monitoringmetricWriter
+
+  members = [
+    "serviceAccount:${google_service_account.service_account.email}"
+  ]
+}
+resource "google_dns_record_set" "webapp_dns" {
+  name        = var.dns_name
+  type        = var.dns_type
+  ttl         = var.dns_ttl
+  managed_zone = var.dns_zone
+
+  rrdatas = [ google_compute_instance.webapp_vm_instance.network_interface.0.access_config.0.nat_ip]
+  depends_on = [google_compute_instance.webapp_vm_instance]
 }
