@@ -96,7 +96,7 @@ variable "service_account_email" {
 variable "scopes" {
   description = "Describes the scopes"
   type        = list(string)
-  default     = ["https://www.googleapis.com/auth/cloud-platform"]
+  default     = ["cloud-platform"]
 }
 
 variable "type" {
@@ -276,4 +276,41 @@ variable "db_port" {
 variable "webapp_subnet_range" {
   description = "Describes the webapp_subnet_range"
   default     = ["10.0.0.0/24"]
+}
+variable "account_id" {
+  description = "Describes the account_id"
+  default     = "csye6225-vm-service-account"
+}
+variable "display_name" {
+  description = "Describes the display_name"
+  default     = "Custom service account for webapp"
+}
+variable "dns_name" {
+  description = "Describes the dns_name"
+  default     = "devikaboddu-csye6225.me."
+}
+variable "dns_type" {
+  description = "Describes the dns_type"
+  default     = "A"
+}
+variable "dns_ttl" {
+  description = "Describes the dns_ttl"
+  default     = 30
+}
+variable "dns_zone" {
+  description = "Describes the dns_zone"
+  default     = "csye6225-zone"
+}
+
+variable "role_serviceAccountUser" {
+  description = "Describes the role serviceAccountUser"
+  default     = "roles/iam.serviceAccountUser"
+}
+variable "role_loggingadmin" {
+  description = "Describes the role logging.admin"
+  default     = "roles/logging.admin"
+}
+variable "role_monitoringmetricWriter" {
+  description = "Describes the role monitoring.metricWriter"
+  default     = "roles/monitoring.metricWriter"
 }
