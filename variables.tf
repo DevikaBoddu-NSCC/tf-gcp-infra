@@ -114,7 +114,7 @@ variable "size" {
 variable "image" {
   description = "Describes the image"
   type        = string
-  default     = "packer-1708536057"
+  default     = "packer-1710914375"
 }
 
 variable "tags" {
@@ -314,3 +314,103 @@ variable "role_monitoringmetricWriter" {
   description = "Describes the role monitoring.metricWriter"
   default     = "roles/monitoring.metricWriter"
 }
+//assignment 7
+variable "function_name" {
+  description = "Name of the Cloud Function"
+  default     = "gcf-function-1"
+}
+
+variable "function_description" {
+  description = "Description of the Cloud Function"
+  default     = "email delivery function"
+}
+
+variable "function_runtime" {
+  description = "Runtime environment for the Cloud Function"
+  default     = "nodejs20"
+}
+
+variable "function_entry_point" {
+  description = "Entry point class or method for the Cloud Function"
+  default     = "helloPubSub"
+}
+
+variable "function_max_instance_count" {
+  description = "Maximum number of instances for the Cloud Function"
+  default     = 3
+}
+
+variable "function_min_instance_count" {
+  description = "Minimum number of instances for the Cloud Function"
+  default     = 1
+}
+
+variable "function_available_memory" {
+  description = "Available memory for each instance of the Cloud Function"
+  default     = "256Mi"
+}
+
+variable "function_timeout_seconds" {
+  description = "Timeout duration (in seconds) for the Cloud Function"
+  default     = 60
+}
+
+variable "function_max_instance_request_concurrency" {
+  description = "Maximum number of concurrent requests per instance for the Cloud Function"
+  default     = 1
+}
+
+variable "function_available_cpu" {
+  description = "Available CPU for each instance of the Cloud Function"
+  default     = "167m"
+}
+
+variable "function_api_key" {
+  description = "MAIL_GUN_API key for the Cloud Function"
+  default     = "53952361e705a695f3abbd0a7f7474d9-f68a26c9-cb707263"
+}
+
+variable "function_vpc_connector_egress_settings" {
+  description = "Egress settings for the VPC connector"
+  default     = "PRIVATE_RANGES_ONLY"
+}
+
+variable "function_ingress_settings" {
+  description = "Ingress settings for the Cloud Function"
+  default     = "ALLOW_ALL"
+}
+
+variable "function_all_traffic_on_latest_revision" {
+  description = "Whether to route all traffic to the latest revision of the Cloud Function"
+  default     = true
+}
+
+variable "function_event_type" {
+  description = "Event type for the Cloud Function trigger"
+  default     = "google.cloud.pubsub.topic.v1.messagePublished"
+}
+
+variable "function_retry_policy" {
+  description = "Retry policy for the Cloud Function trigger"
+  default     = "RETRY_POLICY_DO_NOT_RETRY"
+}
+
+variable "connector_name" {
+  description = "Name of the VPC Access Connector"
+  default     = "vpc-connector-serverless"
+}
+
+variable "connector_ip_cidr_range" {
+  description = "IP CIDR range for the VPC Access Connector"
+  default     = "10.8.0.0/28"
+}
+
+variable "object_name" {
+  description = "Name of the storage bucket object"
+  default     = "devikabucket/function-source.zip"
+}
+
+variable "object_source_path" {
+  description = "Local path to the zipped function source code"
+  default     = "/Users/devikaboddu/Desktop/CC/Assignment7/function-source/filename.zip" 
+} 
