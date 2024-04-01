@@ -316,6 +316,7 @@ variable "role_monitoringmetricWriter" {
 }
 //assignment 7
 
+
 variable "cloud_trigger_topic_name"{
   description = "Describes the cloud_trigger_topic_name"
   default     = "verify_email"

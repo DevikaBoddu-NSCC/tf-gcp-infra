@@ -248,6 +248,12 @@ resource "google_storage_bucket_object" "object" {
   bucket = google_storage_bucket.bucket.name
   source = var.object_source_path
 }
+
+resource "google_storage_bucket_object" "object" {
+  name   = var.object_name
+  bucket = google_storage_bucket.bucket.name
+  source = var.object_source_path
+}
 resource "google_cloudfunctions2_function" "function" {
   name        = var.function_name
   location    = var.region
@@ -300,5 +306,3 @@ resource "google_vpc_access_connector" "connector" {
   network       = google_compute_network.vpc_network.name
   region        = var.region
 }
-#assignment8
-
