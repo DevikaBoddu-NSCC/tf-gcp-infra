@@ -200,6 +200,7 @@ variable "ssh_user" {
 #assignment4
 variable "cloud_sql_instance" {
   description = "Describes the cloud_sql_instance"
+  default = "cloud-sql-instance"
 }
 variable "private_ip_address" {
   description = "Describes the private_ip_address"
