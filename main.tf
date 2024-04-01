@@ -3,10 +3,10 @@ provider "google" {
   region  = var.region
 }
 
-# provider "google-beta" {
-#   project = var.project
-#   region  = var.region
-# }
+provider "google-beta" {
+  project = var.project
+  region  = var.region
+}
 
 resource "google_compute_network" "vpc_network" {
   name                            = var.vpc_name
@@ -216,6 +216,14 @@ resource "google_project_iam_binding" "monitoring_metric_writer_binding" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
+resource "google_project_iam_binding" "pub_sub_publisher" {
+  project = var.project
+  role    = var.role_pubsubpublisher
+
+  members = [
+    "serviceAccount:${google_service_account.service_account.email}"
+  ]
+}
 resource "google_dns_record_set" "webapp_dns" {
   name        = var.dns_name
   type        = var.dns_type
@@ -227,17 +235,11 @@ resource "google_dns_record_set" "webapp_dns" {
 }
 
 resource "google_pubsub_topic" "cloud_trigger_topic" {
-  name = "verify_email_1"
-}
-
-resource "google_pubsub_subscription" "send_email_subscription" {
-  name  = "send_email"
-  topic = google_pubsub_topic.cloud_trigger_topic.id
-  enable_message_ordering    = false
+  name = var.cloud_trigger_topic_name
 }
 resource "google_storage_bucket" "bucket" {
   name                        = "${var.project}-gcf-source" 
-  location                     = "US"
+  location                     = var.location
   uniform_bucket_level_access = true
 }
 
@@ -274,7 +276,8 @@ resource "google_cloudfunctions2_function" "function" {
       DB_USERNAME   = var.db_user_name
       DB_PASSWORD   = google_sql_user.db_user.password
       API_KEY       = var.function_api_key
-      DB_IP_Address = google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address
+      DB_HOST       = google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address
+      DB_NAME       = google_sql_database.database.name
     }
     vpc_connector                  = google_vpc_access_connector.connector.name
     vpc_connector_egress_settings  = var.function_vpc_connector_egress_settings
@@ -297,3 +300,5 @@ resource "google_vpc_access_connector" "connector" {
   network       = google_compute_network.vpc_network.name
   region        = var.region
 }
+#assignment8
+

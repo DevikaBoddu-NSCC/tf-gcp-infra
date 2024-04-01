@@ -315,6 +315,21 @@ variable "role_monitoringmetricWriter" {
   default     = "roles/monitoring.metricWriter"
 }
 //assignment 7
+
+variable "cloud_trigger_topic_name"{
+  description = "Describes the cloud_trigger_topic_name"
+  default     = "verify_email"
+}
+
+variable "location"{
+  description = "Describes the location"
+  default     = "US"
+}
+variable "role_pubsubpublisher" {
+  description = "Describes the role pubsub.publisher"
+  default     = "roles/pubsub.publisher"
+}
+
 variable "function_name" {
   description = "Name of the Cloud Function"
   default     = "gcf-function-1"
@@ -412,5 +427,5 @@ variable "object_name" {
 
 variable "object_source_path" {
   description = "Local path to the zipped function source code"
-  default     = "/Users/devikaboddu/Desktop/CC/Assignment7/function-source/filename.zip" 
+  default     = "/Users/devikaboddu/Desktop/CC/Assignment7/serverless/output.zip" 
 } 
