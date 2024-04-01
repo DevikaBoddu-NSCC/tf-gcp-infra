@@ -315,9 +315,23 @@ variable "role_monitoringmetricWriter" {
   default     = "roles/monitoring.metricWriter"
 }
 //assignment 7
+
+variable "cloud_trigger_topic_name"{
+  description = "Describes the cloud_trigger_topic_name"
+  default     = "verify_email"
+}
+
+variable "location"{
+  description = "Describes the location"
+  default     = "US"
+}
+variable "role_pubsubpublisher" {
+  description = "Describes the role pubsub.publisher"
+  default     = "roles/pubsub.publisher"
+}
 variable "function_name" {
   description = "Name of the Cloud Function"
-  default     = "gcf-function-1"
+  default     = "gcf-function"
 }
 
 variable "function_description" {

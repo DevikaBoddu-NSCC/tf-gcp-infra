@@ -216,6 +216,15 @@ resource "google_project_iam_binding" "monitoring_metric_writer_binding" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
+
+resource "google_project_iam_binding" "pub_sub_publisher" {
+  project = var.project
+  role    = var.role_pubsubpublisher
+
+  members = [
+    "serviceAccount:${google_service_account.service_account.email}"
+  ]
+}
 resource "google_dns_record_set" "webapp_dns" {
   name        = var.dns_name
   type        = var.dns_type
@@ -226,18 +235,14 @@ resource "google_dns_record_set" "webapp_dns" {
   depends_on = [google_compute_instance.webapp_vm_instance]
 }
 
+//assignment 7
 resource "google_pubsub_topic" "cloud_trigger_topic" {
-  name = "verify_email_1"
+  name = var.cloud_trigger_topic_name
 }
 
-resource "google_pubsub_subscription" "send_email_subscription" {
-  name  = "send_email"
-  topic = google_pubsub_topic.cloud_trigger_topic.id
-  enable_message_ordering    = false
-}
 resource "google_storage_bucket" "bucket" {
   name                        = "${var.project}-gcf-source" 
-  location                     = "US"
+  location                     = var.location
   uniform_bucket_level_access = true
 }
 
