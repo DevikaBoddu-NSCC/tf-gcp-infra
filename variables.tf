@@ -430,3 +430,17 @@ variable "object_source_path" {
   description = "Local path to the zipped function source code"
   default     = "/Users/devikaboddu/Desktop/CC/Assignment7/serverless/output.zip" 
 } 
+
+//assignment 8
+variable "role_networkAdmin" {
+  description = "Describes the role_networkAdmin"
+  default     = "roles/compute.networkAdmin"
+}
+variable "role_securityAdmin" {
+  description = "Describes the role_securityAdmin"
+  default     = "roles/compute.securityAdmin"
+}
+variable "role_instanceAdmin" {
+  description = "Describes the role_instanceAdmin"
+  default     = "roles/compute.instanceAdmin"
+}
