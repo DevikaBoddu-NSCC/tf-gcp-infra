@@ -316,7 +316,6 @@ variable "role_monitoringmetricWriter" {
 }
 //assignment 7
 
-
 variable "cloud_trigger_topic_name"{
   description = "Describes the cloud_trigger_topic_name"
   default     = "verify_email"
@@ -330,10 +329,9 @@ variable "role_pubsubpublisher" {
   description = "Describes the role pubsub.publisher"
   default     = "roles/pubsub.publisher"
 }
-
 variable "function_name" {
   description = "Name of the Cloud Function"
-  default     = "gcf-function-1"
+  default     = "gcf-function"
 }
 
 variable "function_description" {
@@ -428,19 +426,5 @@ variable "object_name" {
 
 variable "object_source_path" {
   description = "Local path to the zipped function source code"
-  default     = "/Users/devikaboddu/Desktop/CC/Assignment7/serverless/output.zip" 
+  default     = "/Users/devikaboddu/Desktop/CC/Assignment7/function-source/filename.zip" 
 } 
-
-//assignment 8
-variable "role_networkAdmin" {
-  description = "Describes the role_networkAdmin"
-  default     = "roles/compute.networkAdmin"
-}
-variable "role_securityAdmin" {
-  description = "Describes the role_securityAdmin"
-  default     = "roles/compute.securityAdmin"
-}
-variable "role_instanceAdmin" {
-  description = "Describes the role_instanceAdmin"
-  default     = "roles/compute.instanceAdmin"
-}
