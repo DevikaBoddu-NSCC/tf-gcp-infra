@@ -386,13 +386,13 @@ resource "google_compute_region_autoscaler" "autoscaler" {
   }
 }
 
-resource "google_compute_managed_ssl_certificate" "ssl" {
-  provider = google-beta
-  name     = "ssl-1"
-  managed {
-    domains = ["devikaboddu-csye6225.me"]
-  }
-}
+# resource "google_compute_managed_ssl_certificate" "ssl" {
+#   provider = google-beta
+#   name     = "ssl-1"
+#   managed {
+#     domains = ["devikaboddu-csye6225.me"]
+#   }
+# }
 
 //load-balancer
 resource "google_compute_global_address" "default" {
