@@ -3,10 +3,10 @@ provider "google" {
   region  = var.region
 }
 
-# provider "google-beta" {
-#   project = var.project
-#   region  = var.region
-# }
+provider "google-beta" {
+  project = var.project
+  region  = var.region
+}
 
 resource "google_compute_network" "vpc_network" {
   name                            = var.vpc_name
