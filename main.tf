@@ -53,7 +53,7 @@ resource "google_compute_firewall" "allow_http" {
   }
 
   source_ranges = var.source_ranges
-  target_tags   = var.target_tags
+  target_tags   = ["load-balanced-backend"]
 }
 resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   name    = var.allow_ssh_from_my_ip
@@ -65,6 +65,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   }
 
   source_ranges = var.my_ip_address
+  target_tags   = ["load-balanced-backend"]
 }
 //assignment5
 
@@ -126,7 +127,49 @@ resource "google_sql_user" "db_user" {
   password = random_password.password.result
 }
 
+# resource "google_compute_instance" "webapp_vm_instance" {
+#   name         = var.webapp_vm_instance
+#   machine_type = var.machine_type
+#   zone         = var.zone
+#   allow_stopping_for_update = true 
+#   boot_disk {
+#     initialize_params {
+#       image = data.google_compute_image.latest_custom_image.self_link
+#       size  = var.size
+#       type  = var.type
+#     }
+#   }
+#   network_interface {
+#     network    = google_compute_network.vpc_network.id
+#     subnetwork = google_compute_subnetwork.webapp_subnet.id
+#     access_config {}
+#   }
+#   tags = var.tags
+#   service_account {
+#     email  = google_service_account.service_account.email
+#     scopes = var.scopes
+#   }
+  # metadata = {
+  #   ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_file)}"
+  #   startup-script = <<-EOT
+  #       #!/bin/bash
+  #       ENV_FILE="/opt/csye6225/webapp/.env"
+  #       if [ -e "$ENV_FILE" ]; then
+  #           sed -i '1iLOGPATH=/var/log/webapp/' "$ENV_FILE"
+  #           sed -i 's/^DB_HOST=.*/DB_HOST=${google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address}/' "$ENV_FILE"
+  #           sed -i 's/^DB_USERNAME=.*/DB_USERNAME=${google_sql_user.db_user.name}/' "$ENV_FILE"
+  #           sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=${google_sql_user.db_user.password}/' "$ENV_FILE"
+  #           sed -i 's/^DB_NAME=.*/DB_NAME=${google_sql_database.database.name}/' "$ENV_FILE"
+  #           echo "$ENV_FILE"
+  #       fi
+  #       sudo chown -R csye6225:csye6225 /opt/csye6225/
+  #       sudo chown -R csye6225:csye6225 /var/log/webapp/
+  #       sudo systemctl restart webapp
+  #     EOT
+  # }
 
+#   depends_on = [google_service_networking_connection.default, google_service_account.service_account]
+# }
 resource "google_compute_firewall" "allow_sql_access" {
   name    = var.allow_sql_access
   network = google_compute_network.vpc_network.id
@@ -136,9 +179,9 @@ resource "google_compute_firewall" "allow_sql_access" {
     ports    = var.db_port
   }
 
-  source_ranges = var.webapp_subnet_range
+  source_ranges = ["10.129.0.0/23"]
   destination_ranges = ["${google_compute_global_address.private_ip_address.address}/16"]
-  target_tags = var.tags
+  target_tags   = ["load-balanced-backend"]
 }
 #assignment6
 
@@ -183,18 +226,14 @@ resource "google_project_iam_binding" "pub_sub_publisher" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
-
-//assignment 7
 resource "google_pubsub_topic" "cloud_trigger_topic" {
   name = var.cloud_trigger_topic_name
 }
-
 resource "google_storage_bucket" "bucket" {
   name                        = "${var.project}-gcf-source" 
   location                     = var.location
   uniform_bucket_level_access = true
 }
-
 resource "google_storage_bucket_object" "object" {
   name   = var.object_name
   bucket = google_storage_bucket.bucket.name
@@ -228,7 +267,8 @@ resource "google_cloudfunctions2_function" "function" {
       DB_USERNAME   = var.db_user_name
       DB_PASSWORD   = google_sql_user.db_user.password
       API_KEY       = var.function_api_key
-      DB_IP_Address = google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address
+      DB_HOST       = google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address
+      DB_NAME       = google_sql_database.database.name
     }
     vpc_connector                  = google_vpc_access_connector.connector.name
     vpc_connector_egress_settings  = var.function_vpc_connector_egress_settings
@@ -300,7 +340,7 @@ resource "google_compute_region_instance_template" "instance_template" {
   tags = ["load-balanced-backend"]
 }
 resource "google_compute_region_instance_group_manager" "instance_group_manager" {
-  name               = "csye6225-instance-group-manager-1"
+  name               = "csye6225-instance-group-manager-2"
   named_port {
     name = "http"
     port = 3000
@@ -308,21 +348,21 @@ resource "google_compute_region_instance_group_manager" "instance_group_manager"
   version {
     instance_template = google_compute_region_instance_template.instance_template.self_link
   }
-  base_instance_name = "instance-group-manager-1"
+  base_instance_name = "instance-group-manager-2"
   auto_healing_policies {
-    health_check      = google_compute_health_check.https.id
-    initial_delay_sec = 300
+    health_check      = google_compute_health_check.http.id
+    initial_delay_sec = 600
   }
   # target_size        = 2
 }
-resource "google_compute_health_check" "https" {
-  name               = "webapp-health-check"
-  check_interval_sec = 5
-  healthy_threshold  = 2
+resource "google_compute_health_check" "http" {
+  name               = "lb-health-check-2"
+  check_interval_sec = 20
+  healthy_threshold  = 5
   timeout_sec         = 5
-  unhealthy_threshold = 2
-  https_health_check {
-    port = 443
+  unhealthy_threshold = 5
+  http_health_check {
+    port = 3000
     port_specification = "USE_FIXED_PORT"
     proxy_header       = "NONE"
     request_path       = "/healthz"
@@ -330,8 +370,9 @@ resource "google_compute_health_check" "https" {
   
 }
 
+
 resource "google_compute_region_autoscaler" "autoscaler" {
-  name   = "csye6225-region-autoscaler-1"
+  name   = "csye6225-region-autoscaler-2"
   region = var.region
   target = google_compute_region_instance_group_manager.instance_group_manager.id
 
@@ -347,18 +388,17 @@ resource "google_compute_region_autoscaler" "autoscaler" {
 }
 
 resource "google_compute_managed_ssl_certificate" "ssl" {
-   provider = google-beta
-   name     = "ssl-1"
-   managed {
-     domains = ["devikaboddu-csye6225.me"]
-   }
- }
+  provider = google-beta
+  name     = "ssl-1"
+  managed {
+    domains = ["devikaboddu-csye6225.me"]
+  }
+}
 
-//load-balancer
+# //load-balancer
 resource "google_compute_global_address" "default" {
   name         = "address-name"
   address_type = "EXTERNAL"
- 
 }
 resource "google_compute_subnetwork" "proxy_only" {
   name          = "proxy-only-subnet"
@@ -381,10 +421,6 @@ resource "google_compute_firewall" "default" {
 }
 resource "google_compute_firewall" "allow_proxy" {
   name = "fw-allow-proxies"
-  # allow {
-  #   ports    = ["443"]
-  #   protocol = "tcp"
-  # }
   allow {
     ports    = ["80"]
     protocol = "tcp"
@@ -402,9 +438,8 @@ resource "google_compute_firewall" "allow_proxy" {
 
 resource "google_compute_backend_service" "default" {
   name                  = "webapp-backend-service-1"
-  # region                = var.region
   load_balancing_scheme = "EXTERNAL"
-  health_checks         = [google_compute_health_check.https.id]
+  health_checks         = [google_compute_health_check.http.id]
   protocol              = "HTTP"
   session_affinity      = "NONE"
   timeout_sec           = 30
@@ -422,18 +457,21 @@ resource "google_compute_url_map" "default" {
 
 resource "google_compute_target_https_proxy" "default" {
   provider = google-beta
-  name     = "myservice-https-proxy-1"
+  name     = "myservice-https-proxy-2"
   url_map  = google_compute_url_map.default.id
   ssl_certificates = [
     google_compute_managed_ssl_certificate.ssl.id
   ]
-  depends_on = [
-    google_compute_managed_ssl_certificate.ssl
-  ]
+  # depends_on = [
+  #   google_compute_managed_ssl_certificate.ssl
+  # ]
 }
 
+
+# "projects/dev-csye6225-415809/global/sslCertificates/ssl"
+
 resource "google_compute_global_forwarding_rule" "default" {
-  name       = "lb-forwarding-rule-1"
+  name       = "lb-forwarding-rule-2"
   provider   = google-beta
   depends_on = [google_compute_subnetwork.proxy_only]
 
@@ -441,7 +479,6 @@ resource "google_compute_global_forwarding_rule" "default" {
   load_balancing_scheme = "EXTERNAL"
   port_range            = "443"
   target                = google_compute_target_https_proxy.default.id
-  # network               = google_compute_network.vpc_network.id
   ip_address            = google_compute_global_address.default.id
 }
 resource "google_dns_record_set" "webapp_dns" {
