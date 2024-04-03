@@ -34,7 +34,7 @@ resource "google_compute_route" "webapp_route_name" {
   next_hop_gateway = var.next_hop_gateway
 
 }
-#assignment4
+//assignment4
 data "google_compute_image" "latest_custom_image" {
   family = var.image_family
 }
@@ -67,7 +67,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   source_ranges = var.my_ip_address
   target_tags   = ["load-balanced-backend"]
 }
-#assignment5
+//assignment5
 
 resource "google_compute_global_address" "private_ip_address" {
   name          = var.private_ip_address
@@ -226,6 +226,11 @@ resource "google_project_iam_binding" "pub_sub_publisher" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
+<<<<<<< HEAD
+=======
+
+//assignment 7
+>>>>>>> main
 resource "google_pubsub_topic" "cloud_trigger_topic" {
   name = var.cloud_trigger_topic_name
 }
@@ -291,7 +296,6 @@ resource "google_vpc_access_connector" "connector" {
   network       = google_compute_network.vpc_network.name
   region        = var.region
 }
-
 #assignment8
 resource "google_compute_region_instance_template" "instance_template" {
   name_prefix  = "csye6225-instance-template-"
@@ -490,4 +494,3 @@ resource "google_dns_record_set" "webapp_dns" {
 
   rrdatas = [ google_compute_global_forwarding_rule.default.ip_address]
 }
-
