@@ -72,7 +72,7 @@ variable "dest_range" {
 variable "next_hop_gateway" {
   description = "Describes the next hop gateway for the webapp internet route"
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "0.0.0.0"
 }
 
 variable "route_mode" {
@@ -162,13 +162,13 @@ variable "protocol" {
 variable "allow_http" {
   description = "Describes the allow_http firewall"
   type        = string
-  default     = "allow_http"
+  default     = "allow-http"
 }
 
 variable "deny_ssh" {
   description = "Describes the deny_ssh firewall"
   type        = string
-  default     = "deny_ssh"
+  default     = "deny-ssh"
 }
 variable "my_ip_address" {
   description = "Describes the my_ip_address"
@@ -179,7 +179,7 @@ variable "my_ip_address" {
 variable "allow_ssh_from_my_ip" {
   description = "Describes the allow_ssh_from_my_ip"
   type        = string
-  default     = "allow_ssh_from_my_ip"
+  default     = "allow-ssh-from-my-ip"
 }
 
 variable "image_family" {
@@ -204,6 +204,7 @@ variable "cloud_sql_instance" {
 }
 variable "private_ip_address" {
   description = "Describes the private_ip_address"
+  default = "private-ip-address"
 }
 variable "purpose" {
   description = "Describes the purpose of private-ip-address"
@@ -271,7 +272,7 @@ variable "deny_all_sql_traffic" {
 }
 variable "db_port" {
   description = "Describes the database_port"
-  default     = "3306"
+  default     = ["3306"]
 }
 
 variable "webapp_subnet_range" {
@@ -431,15 +432,315 @@ variable "object_source_path" {
 } 
 
 //assignment 8
-variable "role_networkAdmin" {
-  description = "Describes the role_networkAdmin"
-  default     = "roles/compute.networkAdmin"
+
+variable "instance_template_name_prefix" {
+  description = "The name prefix of the instance template"
+  type        = string
+  default     = "csye6225-instance-template-"
 }
-variable "role_securityAdmin" {
-  description = "Describes the role_securityAdmin"
-  default     = "roles/compute.securityAdmin"
+
+variable "instance_template_description" {
+  description = "The description of the instance template"
+  type        = string
+  default     = "instance template"
 }
-variable "role_instanceAdmin" {
-  description = "Describes the role_instanceAdmin"
-  default     = "roles/compute.instanceAdmin"
+
+variable "instance_group_manager_name" {
+  description = "The name of the instance group manager"
+  type        = string
+  default     = "csye6225-instance-group-manager" 
 }
+
+variable "named_port_name" {
+  description = "The name of the named port"
+  type        = string
+  default     = "http" 
+}
+
+variable "named_port_port" {
+  description = "The port number of the named port"
+  type        = number
+  default     = 3000 
+}
+
+variable "base_instance_name" {
+  description = "The name of the base_instance"
+  type        = string
+  default     = "instance-group-manager"
+}
+variable "initial_delay_sec" {
+  description = "The name of the base_instance"
+  type        = number
+  default     = 600
+}
+
+variable "health_check_name" {
+  description = "The name of the health check"
+  type        = string
+  default     = "lb-health-check" 
+}
+
+variable "check_interval_sec" {
+  description = "The interval between health checks"
+  type        = number
+  default     = 20 
+}
+
+variable "healthy_threshold" {
+  description = "The number of consecutive successful health checks to consider the instance healthy"
+  type        = number
+  default     = 5 
+}
+
+variable "timeout_sec" {
+  description = "The timeout for each health check request"
+  type        = number
+  default     = 5 
+}
+
+variable "unhealthy_threshold" {
+  description = "The number of consecutive failed health checks to consider the instance unhealthy"
+  type        = number
+  default     = 5 
+}
+variable "webapp_healthcheck_port"{
+  description = "The port on which the health check will be performed"
+  default     = 3000
+}
+variable "webapp_port" {
+  description = "The port on which the health check will be performed"
+  default     = ["3000"]
+}
+
+variable "port_specification" {
+  description = "The specification for the port used in the health check"
+  type        = string
+  default     = "USE_FIXED_PORT" 
+}
+
+variable "proxy_header" {
+  description = "The proxy header used in the health check"
+  type        = string
+  default     = "NONE" 
+}
+
+variable "request_path" {
+  description = "The request path used in the health check"
+  type        = string
+  default     = "/healthz" 
+}
+variable "autoscaler_name" {
+  description = "The name of the autoscaler"
+  type        = string
+  default     = "csye6225-region-autoscaler" 
+}
+
+variable "autoscaling_max_replicas" {
+  description = "The maximum number of replicas for autoscaling"
+  type        = number
+  default     = 3 
+}
+
+variable "autoscaling_min_replicas" {
+  description = "The minimum number of replicas for autoscaling"
+  type        = number
+  default     = 1  
+}
+
+variable "autoscaling_cooldown_period" {
+  description = "The cooldown period for autoscaling"
+  type        = number
+  default     = 180  
+}
+
+variable "autoscaling_mode" {
+  description = "The autoscaling mode"
+  type        = string
+  default     = "ON"  
+}
+
+variable "cpu_utilization_target" {
+  description = "The target CPU utilization for autoscaling"
+  type        = number
+  default     = 0.05  
+}
+
+variable "global_address_name" {
+  description = "The name of the global address"
+  type        = string
+  default     = "lb-ip-address"  
+}
+
+variable "global_address_type" {
+  description = "The type of the global address"
+  type        = string
+  default     = "EXTERNAL" 
+}
+
+variable "subnetwork_name" {
+  description = "The name of the subnetwork which assigns IP addresses to instances"
+  type        = string
+  default     = "proxy-only-subnet" 
+}
+
+variable "proxy_subnetwork_ip_cidr_range_string" {
+  description = "The IP CIDR range for the subnetwork"
+  default     = "10.129.0.0/23"
+}
+variable "proxy_subnetwork_ip_cidr_range" {
+  description = "The IP CIDR range for the subnetwork"
+  type        = set(string)  # Specify the type as set(string)
+  default     = ["10.129.0.0/23"]  # Pass the value as a set with one element
+}
+
+variable "subnetwork_purpose" {
+  description = "The purpose of the subnetwork"
+  type        = string
+  default     = "REGIONAL_MANAGED_PROXY"
+}
+
+variable "subnetwork_role" {
+  description = "The role of the subnetwork"
+  type        = string
+  default     = "ACTIVE" 
+}
+
+variable "firewall_health_check_name" {
+  description = "The name of the health check firewall"
+  type        = string
+  default     = "fw-allow-health-check" 
+}
+
+variable "firewall_allow_protocol" {
+  description = "The protocol allowed by the firewall"
+  type        = string
+  default     = "tcp" 
+}
+
+variable "firewall_direction" {
+  description = "The direction of the firewall rule"
+  type        = string
+  default     = "INGRESS"
+}
+
+variable "firewall_priority" {
+  description = "The priority of the firewall rule"
+  type        = number
+  default     = 1000 
+}
+
+variable "firewall_source_ranges_health_check" {
+  description = "The source IP ranges allowed by the health check firewall rule"
+  type        = list(string)
+  default     = ["130.211.0.0/22", "35.191.0.0/16"] 
+}
+
+variable "lb_target_tags" {
+  description = "The target tags allowed by the health check firewall rule"
+  type        = list(string)
+  default     = ["load-balanced-backend"] 
+}
+
+variable "firewall_proxy_name" {
+  description = "The name of the proxy firewall"
+  type        = string
+  default     = "fw-allow-proxies" 
+}
+variable "http_port" {
+  description = "The port allowed by the proxy firewall rule"
+  default     = ["80"]
+}
+
+variable "backend_service_name" {
+  description = "The name of the backend service"
+  type        = string
+  default     = "webapp-backend-service" 
+}
+
+variable "backend_service_load_balancing_scheme" {
+  description = "The load balancing scheme for the backend service"
+  type        = string
+  default     = "EXTERNAL" 
+}
+
+variable "backend_service_protocol" {
+  description = "The protocol used by the backend service"
+  type        = string
+  default     = "HTTP" 
+}
+
+variable "backend_service_session_affinity" {
+  description = "The session affinity setting for the backend service"
+  type        = string
+  default     = "NONE" 
+}
+
+variable "backend_service_timeout_sec" {
+  description = "The timeout in seconds for requests to the backend service"
+  type        = number
+  default     = 30 
+}
+
+variable "backend_service_balancing_mode" {
+  description = "The balancing mode for the backend service"
+  type        = string
+  default     = "UTILIZATION" 
+}
+
+variable "backend_service_capacity_scaler" {
+  description = "The capacity scaler for the backend service"
+  type        = number
+  default     = 1.0 
+}
+variable "lb_url_map_name" {
+  description = "The name of the URL map"
+  type        = string
+  default     = "lb-url-map" 
+}
+variable "target_https_proxy_name" {
+  description = "The name of the target HTTPS proxy"
+  type        = string
+  default     = "myservice-https-proxy-1" 
+}
+
+variable "forwarding_rule_name" {
+  description = "The name of the forwarding rule"
+  type        = string
+  default     = "lb-forwarding-rule"  
+}
+
+variable "provider_beta" {
+  description = "The provider for the forwarding rule"
+  type        = string
+  default     = "google-beta" 
+}
+
+variable "forwarding_rule_ip_protocol" {
+  description = "The IP protocol for the forwarding rule"
+  type        = string
+  default     = "TCP" 
+}
+
+variable "forwarding_rule_load_balancing_scheme" {
+  description = "The load balancing scheme for the forwarding rule"
+  type        = string
+  default     = "EXTERNAL"
+}
+
+variable "forwarding_rule_port_range" {
+  description = "The port range for the forwarding rule"
+  type        = string
+  default     = "443" 
+}
+
+variable "ssl_certificate_name" {
+  description = "The name of the SSL certificate"
+  type        = string
+  default     = "csye6225-ssl-cert" 
+}
+
+variable "ssl_certificate_domain" {
+  description = "The list of domains for the SSL certificate"
+  default     = ["devikaboddu-csye6225.me"]
+}
+
