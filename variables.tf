@@ -7,12 +7,12 @@ variable "project" {
 variable "region" {
   description = "The Google Cloud region"
   type        = string
-  default     = "us-central1"
+  default     = "us-east1"
 }
 variable "zone" {
   description = "The Google Cloud zone"
   type        = string
-  default     = "us-central1-a"
+  default     = "us-east1-b"
 }
 
 variable "vpc_name" {
@@ -72,7 +72,7 @@ variable "dest_range" {
 variable "next_hop_gateway" {
   description = "Describes the next hop gateway for the webapp internet route"
   type        = string
-  default     = "0.0.0.0"
+  default     = "default-internet-gateway"
 }
 
 variable "route_mode" {
@@ -204,7 +204,7 @@ variable "cloud_sql_instance" {
 }
 variable "private_ip_address" {
   description = "Describes the private_ip_address"
-  default = "private-ip-address"
+  default = "private-ip-address-2"
 }
 variable "purpose" {
   description = "Describes the purpose of private-ip-address"
@@ -253,6 +253,10 @@ variable "database_name" {
 variable "db_user_name" {
   description = "Describes the db_user_name"
   default     = "webapp"
+}
+variable "db_dialect" {
+  description = "db_dialect"
+  default     = "mysql"
 }
 variable "deletion_policy" {
   description = "Describes the deletion_policy"

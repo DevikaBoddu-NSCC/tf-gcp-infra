@@ -28,14 +28,13 @@ resource "google_compute_subnetwork" "db_subnet" {
   network       = google_compute_network.vpc_network.id
 }
 
-# resource "google_compute_route" "webapp_route_name" {
-#   name             = var.webapp_route_name
-#   dest_range       = var.dest_range
-#   network          = google_compute_network.vpc_network.id
-#   next_hop_gateway = google_compute_global_address.default.id
-#   depends_on = [ google_compute_global_address.default ]
+resource "google_compute_route" "webapp_route_name" {
+  name             = var.webapp_route_name
+  dest_range       = var.dest_range
+  network          = google_compute_network.vpc_network.id
+  next_hop_gateway = var.next_hop_gateway
 
-# }
+}
 //assignment4
 data "google_compute_image" "latest_custom_image" {
   family = var.image_family
@@ -271,6 +270,7 @@ resource "google_cloudfunctions2_function" "function" {
       API_KEY       = var.function_api_key
       DB_HOST       = google_sql_database_instance.cloud_sql_instance.ip_address.0.ip_address
       DB_NAME       = google_sql_database.database.name
+      DB_DIALECT    = var.db_dialect
     }
     vpc_connector                  = google_vpc_access_connector.connector.name
     vpc_connector_egress_settings  = var.function_vpc_connector_egress_settings
@@ -463,6 +463,7 @@ resource "google_compute_target_https_proxy" "default" {
   url_map  = google_compute_url_map.default.id
   ssl_certificates = [
     google_compute_managed_ssl_certificate.ssl.id
+    
   ]
   depends_on = [
     google_compute_managed_ssl_certificate.ssl
