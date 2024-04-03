@@ -226,11 +226,6 @@ resource "google_project_iam_binding" "pub_sub_publisher" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
-<<<<<<< HEAD
-=======
-
-//assignment 7
->>>>>>> main
 resource "google_pubsub_topic" "cloud_trigger_topic" {
   name = var.cloud_trigger_topic_name
 }
