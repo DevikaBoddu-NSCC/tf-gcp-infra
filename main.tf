@@ -28,13 +28,14 @@ resource "google_compute_subnetwork" "db_subnet" {
   network       = google_compute_network.vpc_network.id
 }
 
+
 resource "google_compute_route" "webapp_route_name" {
   name             = var.webapp_route_name
   dest_range       = var.dest_range
   network          = google_compute_network.vpc_network.id
   next_hop_gateway = var.next_hop_gateway
 
-}
+
 //assignment4
 data "google_compute_image" "latest_custom_image" {
   family = var.image_family
@@ -468,6 +469,7 @@ resource "google_compute_target_https_proxy" "default" {
   depends_on = [
     google_compute_managed_ssl_certificate.ssl
   ]
+
 }
 # "projects/dev-csye6225-415809/global/sslCertificates/ssl"
 

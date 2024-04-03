@@ -73,6 +73,7 @@ variable "next_hop_gateway" {
   description = "Describes the next hop gateway for the webapp internet route"
   type        = string
   default     = "default-internet-gateway"
+
 }
 
 variable "route_mode" {
@@ -204,7 +205,7 @@ variable "cloud_sql_instance" {
 }
 variable "private_ip_address" {
   description = "Describes the private_ip_address"
-  default = "private-ip-address-2"
+  default = "private-ip-address"
 }
 variable "purpose" {
   description = "Describes the purpose of private-ip-address"
