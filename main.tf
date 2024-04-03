@@ -27,13 +27,15 @@ resource "google_compute_subnetwork" "db_subnet" {
   region        = var.region
   network       = google_compute_network.vpc_network.id
 }
-resource "google_compute_route" "webapp_route_name" {
-  name             = var.webapp_route_name
-  dest_range       = var.dest_range
-  network          = google_compute_network.vpc_network.id
-  next_hop_gateway = var.next_hop_gateway
 
-}
+# resource "google_compute_route" "webapp_route_name" {
+#   name             = var.webapp_route_name
+#   dest_range       = var.dest_range
+#   network          = google_compute_network.vpc_network.id
+#   next_hop_gateway = google_compute_global_address.default.id
+#   depends_on = [ google_compute_global_address.default ]
+
+# }
 //assignment4
 data "google_compute_image" "latest_custom_image" {
   family = var.image_family
@@ -53,7 +55,7 @@ resource "google_compute_firewall" "allow_http" {
   }
 
   source_ranges = var.source_ranges
-  target_tags   = ["load-balanced-backend"]
+  target_tags   = var.lb_target_tags
 }
 resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   name    = var.allow_ssh_from_my_ip
@@ -65,7 +67,7 @@ resource "google_compute_firewall" "allow_ssh_from_my_ip" {
   }
 
   source_ranges = var.my_ip_address
-  target_tags   = ["load-balanced-backend"]
+  target_tags   = var.lb_target_tags
 }
 //assignment5
 
@@ -179,9 +181,9 @@ resource "google_compute_firewall" "allow_sql_access" {
     ports    = var.db_port
   }
 
-  source_ranges = ["10.129.0.0/23"]
+  source_ranges = var.proxy_subnetwork_ip_cidr_range
   destination_ranges = ["${google_compute_global_address.private_ip_address.address}/16"]
-  target_tags   = ["load-balanced-backend"]
+  target_tags   = var.lb_target_tags
 }
 #assignment6
 
@@ -293,8 +295,8 @@ resource "google_vpc_access_connector" "connector" {
 }
 #assignment8
 resource "google_compute_region_instance_template" "instance_template" {
-  name_prefix  = "csye6225-instance-template-"
-  description = "instance template"
+  name_prefix  = var.instance_template_name_prefix
+  description = var.instance_template_description
   machine_type = var.machine_type
 
   // boot disk
@@ -337,150 +339,149 @@ resource "google_compute_region_instance_template" "instance_template" {
   lifecycle {
     create_before_destroy = true
   }
-  tags = ["load-balanced-backend"]
+  tags = var.lb_target_tags
 }
 resource "google_compute_region_instance_group_manager" "instance_group_manager" {
-  name               = "csye6225-instance-group-manager-2"
+  name               = var.instance_group_manager_name
   named_port {
-    name = "http"
-    port = 3000
+    name = var.named_port_name
+    port = var.named_port_port
   }
   version {
     instance_template = google_compute_region_instance_template.instance_template.self_link
   }
-  base_instance_name = "instance-group-manager-2"
+  base_instance_name = var.base_instance_name
   auto_healing_policies {
     health_check      = google_compute_health_check.http.id
-    initial_delay_sec = 600
+    initial_delay_sec = var.initial_delay_sec
   }
-  # target_size        = 2
 }
 resource "google_compute_health_check" "http" {
-  name               = "lb-health-check-2"
-  check_interval_sec = 20
-  healthy_threshold  = 5
-  timeout_sec         = 5
-  unhealthy_threshold = 5
+  name               = var.health_check_name
+  check_interval_sec = var.check_interval_sec
+  healthy_threshold  = var.healthy_threshold
+  timeout_sec         = var.timeout_sec
+  unhealthy_threshold = var.unhealthy_threshold
   http_health_check {
-    port = 3000
-    port_specification = "USE_FIXED_PORT"
-    proxy_header       = "NONE"
-    request_path       = "/healthz"
+    port               = var.webapp_healthcheck_port //3000
+    port_specification = var.port_specification
+    proxy_header       = var.proxy_header
+    request_path       = var.request_path
   }
-  
 }
 
-
 resource "google_compute_region_autoscaler" "autoscaler" {
-  name   = "csye6225-region-autoscaler-2"
+  name   = var.autoscaler_name
   region = var.region
   target = google_compute_region_instance_group_manager.instance_group_manager.id
 
   autoscaling_policy {
-    max_replicas    = 3
-    min_replicas    = 1
-    cooldown_period = 180
-    mode            = "ON"
+    max_replicas    = var.autoscaling_max_replicas
+    min_replicas    = var.autoscaling_min_replicas
+    cooldown_period = var.autoscaling_cooldown_period
+    mode            = var.autoscaling_mode
     cpu_utilization {
-      target = 0.05
+      target = var.cpu_utilization_target
     }
   }
 }
 
 resource "google_compute_managed_ssl_certificate" "ssl" {
   provider = google-beta
-  name     = "ssl-1"
+  name     = var.ssl_certificate_name
+
   managed {
-    domains = ["devikaboddu-csye6225.me"]
+    domains = var.ssl_certificate_domain
   }
 }
 
-# //load-balancer
+//load-balancer
 resource "google_compute_global_address" "default" {
-  name         = "address-name"
-  address_type = "EXTERNAL"
+  name         = var.global_address_name
+  address_type = var.global_address_type
 }
 resource "google_compute_subnetwork" "proxy_only" {
-  name          = "proxy-only-subnet"
-  ip_cidr_range = "10.129.0.0/23"
+  name          = var.subnetwork_name
+  ip_cidr_range = var.proxy_subnetwork_ip_cidr_range_string
   network       = google_compute_network.vpc_network.id
-  purpose       = "REGIONAL_MANAGED_PROXY"
+  purpose       = var.subnetwork_purpose
   region        = var.region
-  role          = "ACTIVE"
+  role          = var.subnetwork_role
 }
+
 resource "google_compute_firewall" "default" {
-  name = "fw-allow-health-check"
+  name = var.firewall_health_check_name
   allow {
-    protocol = "tcp"
+    protocol =  var.firewall_allow_protocol
   }
-  direction     = "INGRESS"
+  direction     = var.firewall_direction
   network       = google_compute_network.vpc_network.id
-  priority      = 1000
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  target_tags   = ["load-balanced-backend"]
+  priority      = var.firewall_priority
+  source_ranges = var.firewall_source_ranges_health_check
+  target_tags   = var.lb_target_tags
 }
 resource "google_compute_firewall" "allow_proxy" {
-  name = "fw-allow-proxies"
+  name = var.firewall_proxy_name
   allow {
-    ports    = ["80"]
-    protocol = "tcp"
+    ports    = var.http_port //80
+    protocol =  var.firewall_allow_protocol
   }
   allow {
-    ports    = ["3000"]
-    protocol = "tcp"
+    ports    = var.webapp_port //3000
+    protocol =  var.firewall_allow_protocol
   }
-  direction     = "INGRESS"
+  direction     = var.firewall_direction
   network       = google_compute_network.vpc_network.id
-  priority      = 1000
-  source_ranges = ["10.129.0.0/23"]
-  target_tags   = ["load-balanced-backend"]
+  priority      = var.firewall_priority
+  source_ranges = var.proxy_subnetwork_ip_cidr_range
+  target_tags   = var.lb_target_tags
 }
 
 resource "google_compute_backend_service" "default" {
-  name                  = "webapp-backend-service-1"
-  load_balancing_scheme = "EXTERNAL"
+  name                  = var.backend_service_name
+  load_balancing_scheme = var.backend_service_load_balancing_scheme
   health_checks         = [google_compute_health_check.http.id]
-  protocol              = "HTTP"
-  session_affinity      = "NONE"
-  timeout_sec           = 30
+  protocol              = var.backend_service_protocol
+  session_affinity      = var.backend_service_session_affinity
+  timeout_sec           = var.backend_service_timeout_sec
   backend {
     group           = google_compute_region_instance_group_manager.instance_group_manager.instance_group
-    balancing_mode  = "UTILIZATION"
-    capacity_scaler = 1.0
+    balancing_mode  = var.backend_service_balancing_mode
+    capacity_scaler = var.backend_service_capacity_scaler
   }
 }
+
+
 resource "google_compute_url_map" "default" {
-  name            = "lb-url-map-1"
-  # region = var.region
+  name            = var.lb_url_map_name
   default_service = google_compute_backend_service.default.id
 }
 
 resource "google_compute_target_https_proxy" "default" {
   provider = google-beta
-  name     = "myservice-https-proxy-2"
+  name     = var.target_https_proxy_name
   url_map  = google_compute_url_map.default.id
   ssl_certificates = [
     google_compute_managed_ssl_certificate.ssl.id
   ]
-  # depends_on = [
-  #   google_compute_managed_ssl_certificate.ssl
-  # ]
+  depends_on = [
+    google_compute_managed_ssl_certificate.ssl
+  ]
 }
-
-
 # "projects/dev-csye6225-415809/global/sslCertificates/ssl"
 
 resource "google_compute_global_forwarding_rule" "default" {
-  name       = "lb-forwarding-rule-2"
+  name       = var.forwarding_rule_name
   provider   = google-beta
   depends_on = [google_compute_subnetwork.proxy_only]
 
-  ip_protocol           = "TCP"
-  load_balancing_scheme = "EXTERNAL"
-  port_range            = "443"
+  ip_protocol           = var.forwarding_rule_ip_protocol //TCP
+  load_balancing_scheme = var.forwarding_rule_load_balancing_scheme
+  port_range            = var.forwarding_rule_port_range //443
   target                = google_compute_target_https_proxy.default.id
   ip_address            = google_compute_global_address.default.id
 }
+
 resource "google_dns_record_set" "webapp_dns" {
   name        = var.dns_name
   type        = var.dns_type
