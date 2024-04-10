@@ -93,6 +93,7 @@ resource "google_sql_database_instance" "cloud_sql_instance" {
   name               = "sql-instance-${random_id.db_name_suffix.hex}"
   region             = var.region
   database_version   = var.database_version
+  encryption_key_name = google_kms_crypto_key.cloudsql_crypto_key.id
   deletion_protection = var.deletion_protection
   settings {
     tier = var.tier_sql
@@ -110,7 +111,7 @@ resource "google_sql_database_instance" "cloud_sql_instance" {
     }
   }
   
-  depends_on = [google_service_networking_connection.default]
+  depends_on = [google_service_networking_connection.default, google_kms_crypto_key_iam_binding.binding_cloudsql_instance, google_kms_crypto_key.cloudsql_crypto_key]
 }
 
 resource "google_sql_database" "database" {
@@ -185,7 +186,7 @@ resource "google_compute_firewall" "allow_sql_access" {
   destination_ranges = ["${google_compute_global_address.private_ip_address.address}/16"]
   target_tags   = var.lb_target_tags
 }
-#assignment6
+//assignment6
 
 data "google_iam_policy" "admin" {
   binding {
@@ -219,7 +220,7 @@ resource "google_project_iam_binding" "monitoring_metric_writer_binding" {
     "serviceAccount:${google_service_account.service_account.email}"
   ]
 }
-
+//assignment7
 resource "google_project_iam_binding" "pub_sub_publisher" {
   project = var.project
   role    = var.role_pubsubpublisher
@@ -233,8 +234,13 @@ resource "google_pubsub_topic" "cloud_trigger_topic" {
 }
 resource "google_storage_bucket" "bucket" {
   name                        = "${var.project}-gcf-source" 
-  location                     = var.location
+  location                     = "us-east1"
   uniform_bucket_level_access = true
+  depends_on = [ google_kms_crypto_key_iam_binding.binding_storage_bucket ]
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.storage_crypto_key.id
+  }
+
 }
 resource "google_storage_bucket_object" "object" {
   name   = var.object_name
@@ -245,7 +251,7 @@ resource "google_cloudfunctions2_function" "function" {
   name        = var.function_name
   location    = var.region
   description = var.function_description
-  depends_on  = [google_vpc_access_connector.connector]
+  depends_on  = [google_vpc_access_connector.connector1]
 
   build_config {
     runtime     = var.function_runtime
@@ -273,7 +279,7 @@ resource "google_cloudfunctions2_function" "function" {
       DB_NAME       = google_sql_database.database.name
       DB_DIALECT    = var.db_dialect
     }
-    vpc_connector                  = google_vpc_access_connector.connector.name
+    vpc_connector                  = google_vpc_access_connector.connector1.name
     vpc_connector_egress_settings  = var.function_vpc_connector_egress_settings
     ingress_settings               = var.function_ingress_settings
     all_traffic_on_latest_revision = var.function_all_traffic_on_latest_revision
@@ -288,13 +294,13 @@ resource "google_cloudfunctions2_function" "function" {
   }
 }
 
-resource "google_vpc_access_connector" "connector" {
+resource "google_vpc_access_connector" "connector1" {
   name          = var.connector_name
   ip_cidr_range = var.connector_ip_cidr_range
   network       = google_compute_network.vpc_network.name
   region        = var.region
 }
-#assignment8
+//assignment8
 resource "google_compute_region_instance_template" "instance_template" {
   name_prefix  = var.instance_template_name_prefix
   description = var.instance_template_description
@@ -304,6 +310,10 @@ resource "google_compute_region_instance_template" "instance_template" {
   disk {
       source_image = data.google_compute_image.latest_custom_image.self_link
       type  = var.type
+      disk_encryption_key {
+        kms_key_self_link = google_kms_crypto_key.vm_crypto_key.id
+      }
+
   }
 
   network_interface {
@@ -335,7 +345,7 @@ resource "google_compute_region_instance_template" "instance_template" {
       EOT
   }
 
-  //depends_on = [google_service_networking_connection.default, google_service_account.service_account]
+  depends_on = [google_service_networking_connection.default, google_service_account.service_account, google_kms_crypto_key_iam_binding.binding_vm_instance]
 
   lifecycle {
     create_before_destroy = true
@@ -492,4 +502,79 @@ resource "google_dns_record_set" "webapp_dns" {
   managed_zone = var.dns_zone
 
   rrdatas = [ google_compute_global_forwarding_rule.default.ip_address]
+}
+//assignment9
+resource "random_id" "key_name_suffix" {
+  byte_length = 4
+}
+resource "google_kms_key_ring" "keyring" {
+  provider = google-beta
+  name     = "keyring-${random_id.key_name_suffix.hex}"
+  location = var.region
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+resource "google_kms_crypto_key" "vm_crypto_key" {
+  name            = var.vm_crypto_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.rotation_period
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+resource "google_kms_crypto_key" "cloudsql_crypto_key" {
+  name            = var.cloudsql_crypto_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.rotation_period
+  purpose         = var.key_purpose
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+resource "google_kms_crypto_key" "storage_crypto_key" {
+  name            = var.storage_crypto_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.rotation_period
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+resource "google_kms_crypto_key_iam_binding" "binding_vm_instance" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.vm_crypto_key.id
+  role          = var.role_cryptoKeyEncrypterDecrypter
+
+  members = [
+    "serviceAccount:${var.vm_service_account_email}",
+  ]
+}
+resource "google_kms_crypto_key_iam_binding" "binding_cloudsql_instance" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.cloudsql_crypto_key.id
+  role          = var.role_cryptoKeyEncrypterDecrypter
+
+  members = [
+    "serviceAccount:${var.cloudsql_service_account_email}",
+  ]
+}
+resource "google_kms_crypto_key_iam_binding" "binding_storage_bucket" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.storage_crypto_key.id
+  role    = var.role_cryptoKeyEncrypterDecrypter
+
+  members = [
+    "serviceAccount:${var.storage_service_account_email}",
+  ]
+  
+}
+resource "google_kms_crypto_key_iam_binding" "binding_storage_bucket_1" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.storage_crypto_key.id
+  role    = var.role_cloudkmsadmin
+
+  members = [
+    "serviceAccount:${var.storage_service_account_email}",
+  ]
 }
