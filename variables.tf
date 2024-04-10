@@ -428,7 +428,7 @@ variable "connector_ip_cidr_range" {
 
 variable "object_name" {
   description = "Name of the storage bucket object"
-  default     = "devikabucket/function-source.zip"
+  default     = "devikabucket/output.zip"
 }
 
 variable "object_source_path" {
@@ -594,8 +594,8 @@ variable "proxy_subnetwork_ip_cidr_range_string" {
 }
 variable "proxy_subnetwork_ip_cidr_range" {
   description = "The IP CIDR range for the subnetwork"
-  type        = set(string)  # Specify the type as set(string)
-  default     = ["10.129.0.0/23"]  # Pass the value as a set with one element
+  type        = set(string)   
+  default     = ["10.129.0.0/23"]   
 }
 
 variable "subnetwork_purpose" {
@@ -705,7 +705,7 @@ variable "lb_url_map_name" {
 variable "target_https_proxy_name" {
   description = "The name of the target HTTPS proxy"
   type        = string
-  default     = "myservice-https-proxy-1" 
+  default     = "myservice-https-proxy" 
 }
 
 variable "forwarding_rule_name" {
@@ -748,4 +748,56 @@ variable "ssl_certificate_domain" {
   description = "The list of domains for the SSL certificate"
   default     = ["devikaboddu-csye6225.me"]
 }
+//assignment9
+variable "role_cryptoKeyEncrypterDecrypter" {
+  description = "Describes the role cryptoKeyEncrypterDecrypter"
+  default     = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+}
+variable "role_cloudkmsadmin" {
+  description = "Describes the role cloudkms.admin"
+  default     = "roles/cloudkms.admin"
+}
 
+variable "rotation_period" {
+  description = "The value of rotation_period"
+  type        = string
+  default     = "2592000s" 
+}
+
+variable "vm_crypto_key_name" {
+  description = "The value of vm_crypto_key_name"
+  type        = string
+  default     = "vm_crypto_key"
+}
+variable "cloudsql_crypto_key_name" {
+  description = "The value of cloudsql_crypto_key_name"
+  type        = string
+  default     = "cloudsql_crypto_key"
+}
+variable "storage_crypto_key_name" {
+  description = "The value of storage_crypto_key_name"
+  type        = string
+  default     = "storage_crypto_key"
+}
+
+variable "key_purpose" {
+  description = "The value of key_purpose"
+  type        = string
+  default     = "ENCRYPT_DECRYPT"
+}
+
+variable "vm_service_account_email" {
+  description = "Describes the service_account_email"
+  type        = string
+  default     = "service-30489356583@compute-system.iam.gserviceaccount.com"
+}
+variable "cloudsql_service_account_email" {
+  description = "Describes the service_account_email"
+  type        = string
+  default     = "service-30489356583@gcp-sa-cloud-sql.iam.gserviceaccount.com"
+}
+variable "storage_service_account_email" {
+  description = "Describes the service_account_email"
+  type        = string
+  default     = "service-30489356583@gs-project-accounts.iam.gserviceaccount.com"
+}
