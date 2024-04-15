@@ -121,7 +121,7 @@ resource "google_sql_database" "database" {
 resource "random_password" "password" {
   length           = 16
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "-@&4"
 }
 resource "google_sql_user" "db_user" {
   name     = var.db_user_name
